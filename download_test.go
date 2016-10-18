@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	download "github.com/jimmidyson/go-download"
@@ -54,6 +55,38 @@ func TestDownloadToFileSuccess(t *testing.T) {
 	}
 
 	downloadedData, err := ioutil.ReadFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !bytes.Equal(testData, downloadedData) {
+		t.Fatal("wrong downloaded data")
+	}
+}
+
+func TestDownloadToFileSuccessMkdirs(t *testing.T) {
+	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
+	defer srv.Close()
+
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.Remove(tmpDir) }()
+	_ = os.Remove(tmpDir)
+
+	tmpFile := filepath.Join(tmpDir, "tmp")
+	err = download.DownloadToFile(srv.URL+"/testfile", tmpFile, download.FileDownloadOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	testData, err := ioutil.ReadFile("testdata/testfile")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	downloadedData, err := ioutil.ReadFile(tmpFile)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

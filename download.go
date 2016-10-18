@@ -82,7 +82,7 @@ type Mkdirs *bool
 var (
 	// MkdirAll is used to create all intermediate directories if required.
 	MkdirAll = Mkdirs(newBool(true))
-	// MkdirAll is used to create no intermediate directories.
+	// MkdirNone is used to create no intermediate directories.
 	MkdirNone = Mkdirs(newBool(false))
 )
 
