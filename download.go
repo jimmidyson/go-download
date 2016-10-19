@@ -108,7 +108,6 @@ func ToFile(src, dest string, options FileOptions) error {
 	targetName := filepath.Base(dest)
 	f, err := ioutil.TempFile(targetDir, ".tmp-"+targetName)
 	if err != nil {
-		_ = os.Remove(f.Name()) // #nosec
 		return errors.Wrap(err, "failed to create temp file")
 	}
 

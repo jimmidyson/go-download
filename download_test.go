@@ -197,7 +197,7 @@ func TestDownloadToFileInvalidChecksumHash(t *testing.T) {
 		},
 	})
 	if err == nil {
-		t.Fatalf("expected error")
+		t.Fatal("expected error")
 	}
 	if !strings.Contains(err.Error(), "invalid hash function") {
 		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "invalid hash function", err)
@@ -261,3 +261,58 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 		}()
 	}
 }
+
+func TestInvalidURL(t *testing.T) {
+	err := download.ToFile("://invalid", "", download.FileOptions{})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "invalid src URL") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "invalid src URL", err)
+	}
+}
+
+func TestNonExistentDestDir(t *testing.T) {
+	err := download.ToFile("http://doesnotmatter", "testdata/nonexistentdir/somewhere", download.FileOptions{Mkdirs: download.MkdirNone})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to check destination directory") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to check destination directory", err)
+	}
+}
+
+func TestNonWritableDestDirCreateSubdir(t *testing.T) {
+	_ = os.Chmod("testdata/readonlydir/", 0500)
+	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/subdir/somwhere", download.FileOptions{})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to create destination directory") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to create destination directory", err)
+	}
+}
+
+func TestNonWritableDestDir(t *testing.T) {
+	_ = os.Chmod("testdata/readonlydir/", 0500)
+	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/somewhere", download.FileOptions{})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to create temp file") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to create temp file", err)
+	}
+}
+
+// func TestNonWritableDestFile(t *testing.T) {
+// 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
+// 	defer srv.Close()
+
+// 	err := download.ToFile(srv.URL+"/testfile", "testdata/writabledir/readonlyfile", download.FileOptions{})
+// 	if err == nil {
+// 		t.Fatal("expected error")
+// 	}
+// 	if !strings.Contains(err.Error(), "failed to rename temp file to destination") {
+// 		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to rename temp file to destination", err)
+// 	}
+// }
