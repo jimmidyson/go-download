@@ -22,6 +22,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	download "github.com/jimmidyson/go-download"
@@ -149,6 +150,57 @@ func TestDownloadToFileFailChecksum(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "checksum validation failed") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "checksum validation failed", err)
+	}
+}
+
+func TestDownloadToFile404(t *testing.T) {
+	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
+	defer srv.Close()
+
+	tmpFile, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
+
+	err = download.ToFile(srv.URL+"/invalidfile", tmpFile.Name(), download.FileOptions{
+		Options: download.Options{
+			Checksum:     "d577273f",
+			ChecksumHash: crypto.MD5,
+		},
+	})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "received invalid status code") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "received invalid status code", err)
+	}
+}
+
+func TestDownloadToFileInvalidChecksumHash(t *testing.T) {
+	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
+	defer srv.Close()
+
+	tmpFile, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
+
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{
+		Options: download.Options{
+			Checksum:     "d577273f",
+			ChecksumHash: crypto.SHA224,
+		},
+	})
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "invalid hash function") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "invalid hash function", err)
 	}
 }
 
