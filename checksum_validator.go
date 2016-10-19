@@ -50,7 +50,7 @@ func newValidator(hasher hash.Hash, client *http.Client, checksum, filename stri
 	}
 
 	if f, err := os.Open(checksum); err == nil {
-		defer func() { _ = f.Close() }()
+		defer func() { _ = f.Close() }() // #nosec
 		return newValidatorFromReader(hasher, f, filename)
 	}
 
@@ -62,7 +62,7 @@ func newValidatorFromChecksumURL(hasher hash.Hash, client *http.Client, checksum
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to download checksum file")
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer func() { _ = resp.Body.Close() }() // #nosec
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.Errorf("failed to download checksum file: received status code %d", resp.StatusCode)
@@ -89,7 +89,7 @@ func newValidatorFromReader(hasher hash.Hash, reader io.Reader, filename string)
 			}
 		}
 		if b.Len() == 0 {
-			_, _ = b.WriteString(line)
+			_, _ = b.WriteString(line) // #nosec
 		}
 	}
 	buf := b.String()

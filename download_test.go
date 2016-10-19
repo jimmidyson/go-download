@@ -28,7 +28,7 @@ import (
 )
 
 func TestDownloadToFileFailOnMkdirs(t *testing.T) {
-	err := download.DownloadToFile("http://whatever:12345", "./non-existent-directory", download.FileDownloadOptions{Mkdirs: download.MkdirNone})
+	err := download.ToFile("http://whatever:12345", "./non-existent-directory", download.FileOptions{Mkdirs: download.MkdirNone})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -44,7 +44,7 @@ func TestDownloadToFileSuccess(t *testing.T) {
 	}
 	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
-	err = download.DownloadToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileDownloadOptions{})
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestDownloadToFileSuccessMkdirs(t *testing.T) {
 	_ = os.Remove(tmpDir)
 
 	tmpFile := filepath.Join(tmpDir, "tmp")
-	err = download.DownloadToFile(srv.URL+"/testfile", tmpFile, download.FileDownloadOptions{})
+	err = download.ToFile(srv.URL+"/testfile", tmpFile, download.FileOptions{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -106,8 +106,8 @@ func TestDownloadToFileSuccessMD5Checksum(t *testing.T) {
 	}
 	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
-	err = download.DownloadToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileDownloadOptions{
-		DownloadOptions: download.DownloadOptions{
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{
+		Options: download.Options{
 			Checksum:     "d577273ff885c3f84dadb8578bb41399",
 			ChecksumHash: crypto.MD5,
 		},
@@ -141,8 +141,8 @@ func TestDownloadToFileFailChecksum(t *testing.T) {
 	}
 	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
-	err = download.DownloadToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileDownloadOptions{
-		DownloadOptions: download.DownloadOptions{
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{
+		Options: download.Options{
 			Checksum:     "d577273f",
 			ChecksumHash: crypto.MD5,
 		},
@@ -180,8 +180,8 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 			}
 			defer func() { _ = os.Remove(tmpFile.Name()) }()
 
-			err = download.DownloadToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileDownloadOptions{
-				DownloadOptions: download.DownloadOptions{
+			err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{
+				Options: download.Options{
 					Checksum:     srv.URL + "/" + chk.checksumFile,
 					ChecksumHash: chk.hash,
 				},
