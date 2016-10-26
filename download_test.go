@@ -330,3 +330,78 @@ func TestNonExistentDestDir(t *testing.T) {
 		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to check destination directory", err)
 	}
 }
+
+func TestDownloadToFileSuccessWithRetry(t *testing.T) {
+	hfs := http.FileServer(http.Dir("testdata"))
+	var srv *httptest.Server
+	i := 0
+	hf := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if i < 2 {
+			i++
+			srv.CloseClientConnections()
+			return
+		}
+		hfs.ServeHTTP(w, req)
+	})
+	srv = httptest.NewServer(hf)
+	defer srv.Close()
+
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
+
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	downloadedData, err := ioutil.ReadFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !bytes.Equal(testData, downloadedData) {
+		t.Fatal("wrong downloaded data")
+	}
+}
+
+func TestDownloadToFileFailure(t *testing.T) {
+	var srv *httptest.Server
+	hf := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		srv.CloseClientConnections()
+	})
+	srv = httptest.NewServer(hf)
+	defer srv.Close()
+
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
+
+	err = download.ToFile(srv.URL+"/testfile", tmpFile.Name(), download.FileOptions{})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}

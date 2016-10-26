@@ -50,6 +50,11 @@ type Options struct {
 	ChecksumHash crypto.Hash
 	// ProgressBars is the configuration of progress bars output. Set to `nil` (default) to disable.
 	ProgressBars *ProgressBarOptions
+	// Retries is the number of retries for retriable errors. Defaults to 5 if unset. Set to -1 for
+	// infinite retries.
+	Retries int
+	// RetryInterval is the interval between retries.
+	RetryInterval time.Duration
 }
 
 // FileOptions holds the possible configuration options to download to a file.
@@ -171,16 +176,29 @@ func ToWriter(src string, w io.Writer, options Options) error {
 // the specified `Options`.
 func FromURL(src *url.URL, w io.Writer, options Options) error {
 	httpClient := getHTTPClient(options)
-	var err error
-	resp, err := httpClient.Get(src.String())
-	if err != nil {
+	var (
+		err  error
+		resp *http.Response
+	)
+	downloader := func() error {
+		resp, err = httpClient.Get(src.String())
+		if err != nil {
+			return &retriableError{errors.Wrap(err, "Temporary error downloading localkube via http")}
+		}
+		if resp.StatusCode != http.StatusOK {
+			defer func() { _ = resp.Body.Close() }() // #nosec
+			return errors.Errorf("received invalid status code: %d (expected %d)", resp.StatusCode, http.StatusOK)
+		}
+		return nil
+	}
+	retries := options.Retries
+	if retries == 0 {
+		retries = 5
+	}
+	if err = retryAfter(retries, downloader, options.RetryInterval); err != nil {
 		return errors.Wrap(err, "download failed")
 	}
 	defer func() { _ = resp.Body.Close() }() // #nosec
-
-	if resp.StatusCode != http.StatusOK {
-		return errors.Errorf("received invalid status code: %d (expected %d)", resp.StatusCode, http.StatusOK)
-	}
 
 	var (
 		validator checksumValidator
