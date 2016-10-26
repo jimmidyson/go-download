@@ -29,7 +29,7 @@ import (
 )
 
 func TestDownloadToFileFailOnMkdirs(t *testing.T) {
-	err := download.ToFile("http://whatever:12345", "./non-existent-directory", download.FileOptions{Mkdirs: download.MkdirNone})
+	err := download.ToFile("http://whatever:12345", "non-existent-directory", download.FileOptions{Mkdirs: download.MkdirNone})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -39,7 +39,14 @@ func TestDownloadToFileSuccess(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -50,7 +57,7 @@ func TestDownloadToFileSuccess(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -69,7 +76,14 @@ func TestDownloadToFileSuccessMkdirs(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpDir, err := ioutil.TempDir("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpDir, err := ioutil.TempDir(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -82,7 +96,7 @@ func TestDownloadToFileSuccessMkdirs(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -101,7 +115,14 @@ func TestDownloadToFileSuccessMD5Checksum(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -117,7 +138,7 @@ func TestDownloadToFileSuccessMD5Checksum(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -136,7 +157,14 @@ func TestDownloadToFileFailChecksum(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -160,7 +188,14 @@ func TestDownloadToFile404(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -184,7 +219,14 @@ func TestDownloadToFileInvalidChecksumHash(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -224,9 +266,16 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
 	for _, chk := range checksumTests {
 		func() {
-			tmpFile, err := ioutil.TempFile("", "")
+			tmpFile, err := ioutil.TempFile(targetDir, "")
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -243,7 +292,7 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 				return
 			}
 
-			testData, err := ioutil.ReadFile("testdata/testfile")
+			testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 				return
@@ -273,7 +322,7 @@ func TestInvalidURL(t *testing.T) {
 }
 
 func TestNonExistentDestDir(t *testing.T) {
-	err := download.ToFile("http://doesnotmatter", "testdata/nonexistentdir/somewhere", download.FileOptions{Mkdirs: download.MkdirNone})
+	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "nonexistentdir", "somewhere"), download.FileOptions{Mkdirs: download.MkdirNone})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -281,38 +330,3 @@ func TestNonExistentDestDir(t *testing.T) {
 		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to check destination directory", err)
 	}
 }
-
-func TestNonWritableDestDirCreateSubdir(t *testing.T) {
-	_ = os.Chmod("testdata/readonlydir/", 0500)
-	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/subdir/somwhere", download.FileOptions{})
-	if err == nil {
-		t.Fatal("expected error")
-	}
-	if !strings.Contains(err.Error(), "failed to create destination directory") {
-		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to create destination directory", err)
-	}
-}
-
-func TestNonWritableDestDir(t *testing.T) {
-	_ = os.Chmod("testdata/readonlydir/", 0500)
-	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/somewhere", download.FileOptions{})
-	if err == nil {
-		t.Fatal("expected error")
-	}
-	if !strings.Contains(err.Error(), "failed to create temp file") {
-		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to create temp file", err)
-	}
-}
-
-// func TestNonWritableDestFile(t *testing.T) {
-// 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
-// 	defer srv.Close()
-
-// 	err := download.ToFile(srv.URL+"/testfile", "testdata/writabledir/readonlyfile", download.FileOptions{})
-// 	if err == nil {
-// 		t.Fatal("expected error")
-// 	}
-// 	if !strings.Contains(err.Error(), "failed to rename temp file to destination") {
-// 		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to rename temp file to destination", err)
-// 	}
-// }
