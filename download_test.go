@@ -39,7 +39,14 @@ func TestDownloadToFileSuccess(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -69,7 +76,14 @@ func TestDownloadToFileSuccessMkdirs(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpDir, err := ioutil.TempDir("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpDir, err := ioutil.TempDir(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -101,7 +115,14 @@ func TestDownloadToFileSuccessMD5Checksum(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -136,7 +157,14 @@ func TestDownloadToFileFailChecksum(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -160,7 +188,14 @@ func TestDownloadToFile404(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -184,7 +219,14 @@ func TestDownloadToFileInvalidChecksumHash(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
-	tmpFile, err := ioutil.TempFile("", "")
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
+	tmpFile, err := ioutil.TempFile(targetDir, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -224,9 +266,16 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 	srv := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	defer srv.Close()
 
+	targetDir := filepath.Join("testdata", "output")
+	err := os.MkdirAll(targetDir, 0755)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = os.RemoveAll(targetDir) }() // #nosec
+
 	for _, chk := range checksumTests {
 		func() {
-			tmpFile, err := ioutil.TempFile("", "")
+			tmpFile, err := ioutil.TempFile(targetDir, "")
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
