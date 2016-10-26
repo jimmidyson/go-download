@@ -29,7 +29,7 @@ import (
 )
 
 func TestDownloadToFileFailOnMkdirs(t *testing.T) {
-	err := download.ToFile("http://whatever:12345", "./non-existent-directory", download.FileOptions{Mkdirs: download.MkdirNone})
+	err := download.ToFile("http://whatever:12345", "non-existent-directory", download.FileOptions{Mkdirs: download.MkdirNone})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -50,7 +50,7 @@ func TestDownloadToFileSuccess(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -82,7 +82,7 @@ func TestDownloadToFileSuccessMkdirs(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -117,7 +117,7 @@ func TestDownloadToFileSuccessMD5Checksum(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	testData, err := ioutil.ReadFile("testdata/testfile")
+	testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -243,7 +243,7 @@ func TestDownloadToFileWithChecksumValidation(t *testing.T) {
 				return
 			}
 
-			testData, err := ioutil.ReadFile("testdata/testfile")
+			testData, err := ioutil.ReadFile(filepath.Join("testdata", "testfile"))
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 				return
