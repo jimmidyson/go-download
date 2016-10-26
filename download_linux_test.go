@@ -27,7 +27,7 @@ import (
 
 func TestNonWritableDestDirCreateSubdir(t *testing.T) {
 	_ = os.Chmod(filepath.Join("testdata", "readonlydir"), 0500)
-	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "readonlydir", "subdir", "somwhere"), download.FileOptions{})
+	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "readonlydir", "subdir", "somewhere"), download.FileOptions{})
 	if err == nil {
 		t.Fatal("expected error")
 	}
