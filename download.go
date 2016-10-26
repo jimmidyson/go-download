@@ -113,7 +113,14 @@ func ToFile(src, dest string, options FileOptions) error {
 
 	err = downloadFile(u, f, options.Options)
 	if err != nil {
+		_ = f.Close()           // #nosec
+		_ = os.Remove(f.Name()) // #nosec
 		return errors.Wrap(err, "failed to download")
+	}
+	err = f.Close()
+	if err != nil {
+		_ = os.Remove(f.Name()) // #nosec
+		return errors.Wrap(err, "failed to close temp file")
 	}
 
 	err = os.Rename(f.Name(), dest)
@@ -128,13 +135,7 @@ func ToFile(src, dest string, options FileOptions) error {
 func downloadFile(u *url.URL, f *os.File, options Options) error {
 	err := FromURL(u, f, options)
 	if err != nil {
-		_ = os.Remove(f.Name()) // #nosec
 		return errors.Wrap(err, "failed to download to temp file")
-	}
-	err = f.Close()
-	if err != nil {
-		_ = os.Remove(f.Name()) // #nosec
-		return errors.Wrap(err, "failed to close temp file")
 	}
 
 	return nil
