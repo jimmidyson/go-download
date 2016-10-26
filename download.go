@@ -125,8 +125,24 @@ func ToFile(src, dest string, options FileOptions) error {
 
 	err = os.Rename(f.Name(), dest)
 	if err != nil {
-		_ = os.Remove(f.Name()) // #nosec
-		return errors.Wrap(err, "failed to rename temp file to destination")
+		// Rename failed, try to copy file.
+		destF, err := os.Create(dest)
+		f, err = os.Open(f.Name())
+		defer func() {
+			_ = f.Close()           // #nosec
+			_ = os.Remove(f.Name()) // #nosec
+		}()
+		_, err = io.Copy(destF, f)
+		if err != nil {
+			_ = destF.Close()
+			_ = os.Remove(destF.Name())
+			return errors.Wrap(err, "failed to rename temp file to destination")
+		}
+		err = destF.Close()
+		if err != nil {
+			_ = os.Remove(destF.Name())
+			return errors.Wrap(err, "failed to rename temp file to destination")
+		}
 	}
 
 	return nil
