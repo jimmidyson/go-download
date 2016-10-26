@@ -273,7 +273,7 @@ func TestInvalidURL(t *testing.T) {
 }
 
 func TestNonExistentDestDir(t *testing.T) {
-	err := download.ToFile("http://doesnotmatter", "testdata/nonexistentdir/somewhere", download.FileOptions{Mkdirs: download.MkdirNone})
+	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "nonexistentdir", "somewhere"), download.FileOptions{Mkdirs: download.MkdirNone})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -283,8 +283,8 @@ func TestNonExistentDestDir(t *testing.T) {
 }
 
 func TestNonWritableDestDirCreateSubdir(t *testing.T) {
-	_ = os.Chmod("testdata/readonlydir/", 0500)
-	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/subdir/somwhere", download.FileOptions{})
+	_ = os.Chmod(filepath.Join("testdata", "readonlydir"), 0500)
+	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "readonlydir", "subdir", "somwhere"), download.FileOptions{})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -294,8 +294,8 @@ func TestNonWritableDestDirCreateSubdir(t *testing.T) {
 }
 
 func TestNonWritableDestDir(t *testing.T) {
-	_ = os.Chmod("testdata/readonlydir/", 0500)
-	err := download.ToFile("http://doesnotmatter", "testdata/readonlydir/somewhere", download.FileOptions{})
+	_ = os.Chmod(filepath.Join("testdata", "readonlydir"), 0500)
+	err := download.ToFile("http://doesnotmatter", filepath.Join("testdata", "readonlydir", "somewhere"), download.FileOptions{})
 	if err == nil {
 		t.Fatal("expected error")
 	}
