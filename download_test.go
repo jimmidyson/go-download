@@ -326,8 +326,8 @@ func TestNonExistentDestDir(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if !strings.Contains(err.Error(), "failed to check destination directory") {
-		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "failed to check destination directory", err)
+	if !strings.Contains(err.Error(), "directory "+filepath.Join("testdata", "nonexistentdir")+" does not exist") {
+		t.Fatalf("unexpected error, expected to contain: '%s', actual: '%v'", "directory "+filepath.Join("testdata", "nonexistentdir")+" does not exist", err)
 	}
 }
 
