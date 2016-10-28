@@ -208,7 +208,7 @@ func FromURL(src *url.URL, w io.Writer, options Options) error {
 	downloader := func() error {
 		resp, err = httpClient.Get(src.String())
 		if err != nil {
-			return &retriableError{errors.Wrap(err, "Temporary error downloading localkube via http")}
+			return &retriableError{errors.Wrap(err, "Temporary download error")}
 		}
 		if resp.StatusCode != http.StatusOK {
 			defer func() { _ = resp.Body.Close() }() // #nosec
